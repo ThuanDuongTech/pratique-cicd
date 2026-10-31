@@ -1,0 +1,43 @@
+name: pratique CICD
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Recuperer le code
+        uses: actions/checkout@v6
+
+      - name: Installer Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Executer le programme
+        run: python main.py
+
+      - name: Creer le rapport
+        run: |
+          echo "## Message:" > report.md
+          cat sortie.txt >> report.md
+
+      - name: Enregistrer les resultats sur GitHub
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add report.md sortie.txt
+
+          if git diff --cached --quiet; then
+            echo "Aucun changement a enregistrer."
+          else
+            git commit -m "Ajouter les resultats du workflow"
+            git push origin HEAD:main
+          fi
